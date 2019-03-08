@@ -255,9 +255,9 @@ return [
              * the following line and set the port accordingly
              */
             //'port' => 'non_standard_port_number',
-            'username' => 'my_app',
-            'password' => 'secret',
-            'database' => 'my_app',
+            'username' => 'root',
+            'password' => 'root',
+            'database' => 'where_to_go',
             /*
              * You do not need to set this flag to use full utf-8 encoding (internal default since CakePHP 3.6).
              */
@@ -308,6 +308,21 @@ return [
             'log' => false,
             //'init' => ['SET GLOBAL innodb_stats_on_metadata = 0'],
             'url' => env('DATABASE_TEST_URL', null),
+        ],
+        'debug_kit' => [
+            'className' => 'Cake\Database\Connection',
+            'driver' => 'Cake\Database\Driver\Mysql',
+            'persistent' => false,
+            'host' => 'localhost',
+            //'port' => 'nonstandard_port_number',
+            'username' => 'root',
+            'password' => 'root',
+            'database' => 'where_to_go',
+            'encoding' => 'utf8',
+            'timezone' => 'UTC',
+            'cacheMetadata' => true,
+            'quoteIdentifiers' => false,
+            //'init' => ['SET GLOBAL innodb_stats_on_metadata = 0'],
         ],
     ],
 
