@@ -7,19 +7,20 @@ namespace App\Model\Domain;
 class DbUpdaterDto
 {
     public $TableEntity = null;
+    public $TempTableEntity = null;
     public $tableNewData = [];
     public $fileName = null;
 
     /**
      * DbUpdaterDto constructor.
      * @param null $TableEntity
-     * @param array $tableNewData
+     * @param null $TempTableEntity
      * @param null $fileName
      */
-    public function __construct($TableEntity, array $tableNewData, $fileName)
+    public function __construct($TableEntity, $TempTableEntity, $fileName)
     {
         $this->TableEntity = $TableEntity;
-        $this->tableNewData = $tableNewData;
+        $this->TempTableEntity = $TempTableEntity;
         $this->fileName = $fileName;
     }
 

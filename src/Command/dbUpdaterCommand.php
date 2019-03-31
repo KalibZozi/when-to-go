@@ -10,6 +10,7 @@ namespace App\Command;
 
 
 use App\Model\Domain\DbUpdaterDto;
+use App\Model\Entity\RouteTemp;
 use Cake\Console\Arguments;
 use Cake\Console\Command;
 use Cake\Console\ConsoleIo;
@@ -22,108 +23,98 @@ class dbUpdaterCommand extends Command
     const GTFS_URL = "https://bkk.hu/gtfs/budapest_gtfs.zip";
 
     private $fileList = [];
+    private $paginator;
 
     public function initialize()
     {
         parent::initialize();
+        $this->loadModel('RouteTemps');
+        $this->loadModel('StopTemps');
+        $this->loadModel('TripTemps');
         $this->loadModel('Routes');
         $this->loadModel('Stops');
         $this->loadModel('Trips');
-//        $this->fileList[] = new DbUpdaterDto($this->Routes, [], 'routes.txt');
-//        $this->fileList[] = new DbUpdaterDto($this->Stops, [], 'stops.txt');
-        $this->fileList[] = new DbUpdaterDto($this->Trips, [], 'trips.txt');
+//        $this->paginator = new PaginatorComponent();
+//        $this->fileList[] = new DbUpdaterDto($this->Routes, $this->RouteTemps, 'routes.txt');
+//        $this->fileList[] = new DbUpdaterDto($this->Stops, $this->StopTemps, 'stops.txt');
+        $this->fileList[] = new DbUpdaterDto($this->Trips, $this->TripTemps, 'trips.txt');
     }
 
     public function execute(Arguments $args, ConsoleIo $io){
         $io->out('BKK adatbázis frissítő a GTFS fájllal. Betöltés kezdése...');
 
-        $this->downloadGtfs($io);
+//        $this->downloadGtfs($io);
+//
+//        $this->extractGtfs($io);
+//
+//        /** @var DbUpdaterDto $actualFile */
+//        foreach ($this->fileList as $actualFile){
+//            $io->out('Aktuális fájl:'.$actualFile->fileName);
+//            $actualFile->TempTableEntity->deleteAll([]);
+//            $gtfsFileHandle = @fopen(self::GTFS_FOLDER . $actualFile->fileName, 'r');
+//            if(empty($gtfsFileHandle)){
+//                continue;
+//                //hibakezeles
+//            }
+//            $header = true;
+//            $headerArray = [];
+//            while(($gtfsFileContents = fgetcsv($gtfsFileHandle, 0, ',', '"')) !== false){
+//                if(empty($gtfsFileContents)){
+//                    continue;
+//                }
+//                $data = [];
+//                if($header){
+//                    $header = false;
+//                    $headerArray = $gtfsFileContents;
+//                    continue;
+//                }
+//                for($i=0; $i < count($gtfsFileContents); $i++){
+//                    $data[$headerArray[$i]] = $this->addTypeToValue($gtfsFileContents[$i]);
+//                }
+//
+//                try {
+//                    $patchedNewData = $actualFile->TempTableEntity->newEntity($data, ['validate' => false]);
+//                    if ($patchedNewData->hasErrors()) {
+//                        $errorList = '';
+//                        foreach ($patchedNewData->getErrors() as $errorKey => $errorMessage) {
+//                            $errorList .= $errorKey . '=' . implode(' / ', $errorMessage) . '|';
+//                        }
+//                        $io->error('Hiba az adatok patch-elésekor! Hibák:');
+//                        $io->error($errorList);
+//                        $this->abort();
+//                    }
+//                    if (!empty($patchedNewData)) {
+//                        $newEntity = null;
+//                        try {
+//                            $newEntity = $actualFile->TempTableEntity->save($patchedNewData, ['checkRules' => false]);
+//                        } catch (\Exception $e) {
+//                            $io->error('Nem sikerült az adatokat menteni! Hiba leírása: ' . $e->getMessage());
+//                            $this->abort();
+//                        }
+//                    }
+//                } catch (\Exception $e) {
+//                    $io->error('Hiba az új entitás létrehozásakor! [' . implode(',', $data) . ']');
+//                    $this->abort();
+//                }
+//            }
+//            fclose($gtfsFileHandle);
+//        }
+//        $io->out('Betöltés vége a temp táblákba. Áttöltés kezdése a normál táblákba...');
 
-        $this->extractGtfs($io);
-
-        /** @var DbUpdaterDto $actualFile */
-        foreach ($this->fileList as $actualFile){
-            $gtfsFileHandle = @fopen(self::GTFS_FOLDER . $actualFile->fileName, 'r');
-            if(empty($gtfsFileHandle)){
-                continue;
-                //hibakezeles
-            }
-            $header = true;
-            $headerArray = [];
-            $newTableData = [];
-            while(($gtfsFileContents = fgetcsv($gtfsFileHandle, 0, ',', '"')) !== false){
-                if(empty($gtfsFileContents)){
-                    continue;
-                }
-                $data = [];
-                if($header){
-                    $header = false;
-                    $headerArray = $gtfsFileContents;
-                    continue;
-                }
-                for($i=0; $i < count($gtfsFileContents); $i++){
-                    $data[$headerArray[$i]] = $this->addTypeToValue($gtfsFileContents[$i]);
-                }
-                $actualFile->tableNewData[] = $data;
-//                $io->out('tableNewData size='.$this->getSize($actualFile->tableNewData));
-                $gtfsFileContents = null;
-            }
-            fclose($gtfsFileHandle);
-
-            if(empty($newTableData)){
-//                $io->error('Nincs frissíthető adat!');
-//                $this->abort();
-            }
-        }
-
-//        $table = $this->getTableLocator()->get('Stops');
-//die();
         /** @var DbUpdaterDto $actualFile */
         foreach ($this->fileList as $actualFile) {
-            try {
-                $actualFile->TableEntity->getConnection()->transactional(function ($conn) use ($actualFile, $io) {
-//                $io->out('Belépett a tranzakcióba');
-                    foreach ($actualFile->tableNewData as $actualData) {
-                        $patchedNewData = [];
-//                    $io->out('[C]Belépett a foreach-be');
-                        try {
-                            $patchedNewData = $actualFile->TableEntity->newEntity($actualData, ['validate' => false]);
-                            if ($patchedNewData->hasErrors()) {
-                                $errorList = '';
-                                foreach ($patchedNewData->getErrors() as $errorKey => $errorMessage) {
-                                    $errorList .= $errorKey . '=' . implode(' / ', $errorMessage) . '|';
-                                }
-                                $io->error('Hiba az adatok patch-elésekor! Hibák:');
-                                $io->error($errorList);
-                                $this->abort();
-                            }
-                        } catch (\Exception $e) {
-                            $io->error('Hiba az új entitás létrehozásakor! [' . implode(',', $actualData) . ']');
-                            $this->abort();
-                        }
-//                    $io->out('[C]Kész a patch-elés');
-
-                        if (!empty($patchedNewData)) {
-//                        $io->out('Nem üres a patchEntity. Lehet menteni.');
-                            $newEntity = null;
-                            try {
-                                $newEntity = $actualFile->TableEntity->save($patchedNewData, ['checkRules' => false, 'atomic' => false]);
-//                            $newEntity = $this->Stops->save($patchedNewData, ['checkRules'=>false]);
-//                            $io->out('Save után vagyunk.');
-                            } catch (\Exception $e) {
-                                $io->error('Nem sikerült az adatokat menteni! Hiba leírása: ' . $e->getMessage());
-                                $this->abort();
-                            }
-                        }
-//                    $io->out('[C]Vége a mentésnek');
-                    }
-                });
-            } catch (\Exception $e) {
-                $io->error('Hiba az adatok mentésekor (fő függvény)!');
-                $this->abort();
+            $io->out('Aktuális fájl:'.$actualFile->fileName);
+            $tableDataList = $actualFile->TempTableEntity->find('all');
+            /** @var RouteTemp $oneItem */
+            foreach ($tableDataList as $oneItem){
+                $patchedNewData = $actualFile->TableEntity->newEntity(json_decode(json_encode($oneItem), true), ['validate' => false]);
+                $newEntity = $actualFile->TableEntity->save($patchedNewData, ['checkRules' => false]);
             }
+            $actualFile->TableEntity->deleteAll(['processed'=>0]);
+            $actualFile->TableEntity->updateAll(['processed'=>0], ['processed'=>1]);
         }
-        $io->out('Betöltés vége.');
+
+        $io->out('Betöltés vége a normál táblákba.');
     }
 
     /**

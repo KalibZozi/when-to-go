@@ -16,6 +16,7 @@ use Cake\ORM\Entity;
  * @property int|null $wheelchair_accessible
  * @property int|null $bikes_allowed
  * @property int|null $boarding_door
+ * @property int $processed
  *
  * @property \App\Model\Entity\Route $route
  */

@@ -15,6 +15,7 @@ use Cake\ORM\Entity;
  * @property string $parent_station
  * @property int $wheelchair_boarding
  * @property int $stop_direction
+ * @property int $processed
  */
 class Stop extends Entity
 {

@@ -4,21 +4,21 @@ namespace App\Model\Entity;
 use Cake\ORM\Entity;
 
 /**
- * Route Entity
+ * StopTemp Entity
  *
- * @property string|null $agency_id
- * @property string $route_id
- * @property string $route_short_name
- * @property string|null $route_long_name
- * @property int|null $route_type
- * @property string $route_desc
- * @property string|null $route_color
- * @property string|null $route_text_color
+ * @property string $stop_id
+ * @property string $stop_name
+ * @property float $stop_lat
+ * @property float $stop_lon
+ * @property string|null $stop_code
+ * @property int|null $location_type
+ * @property string|null $parent_station
+ * @property int|null $wheelchair_boarding
+ * @property int|null $stop_direction
  * @property int $processed
  */
-class Route extends Entity
+class StopTemp extends Entity
 {
-    const NAME = 'Route';
 
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().

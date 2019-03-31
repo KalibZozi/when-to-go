@@ -4,7 +4,7 @@ namespace App\Model\Entity;
 use Cake\ORM\Entity;
 
 /**
- * Route Entity
+ * RouteTemp Entity
  *
  * @property string|null $agency_id
  * @property string $route_id
@@ -16,9 +16,8 @@ use Cake\ORM\Entity;
  * @property string|null $route_text_color
  * @property int $processed
  */
-class Route extends Entity
+class RouteTemp extends Entity
 {
-    const NAME = 'Route';
 
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
