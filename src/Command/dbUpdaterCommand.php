@@ -9,6 +9,7 @@
 namespace App\Command;
 
 
+use App\Model\Domain\DbUpdaterDto;
 use Cake\Console\Arguments;
 use Cake\Console\Command;
 use Cake\Console\ConsoleIo;
@@ -20,10 +21,17 @@ class dbUpdaterCommand extends Command
     const GTFS_FILE = self::GTFS_FOLDER . "gtfs.zip";
     const GTFS_URL = "https://bkk.hu/gtfs/budapest_gtfs.zip";
 
+    private $fileList = [];
+
     public function initialize()
     {
         parent::initialize();
+        $this->loadModel('Routes');
         $this->loadModel('Stops');
+        $this->loadModel('Trips');
+//        $this->fileList[] = new DbUpdaterDto($this->Routes, [], 'routes.txt');
+//        $this->fileList[] = new DbUpdaterDto($this->Stops, [], 'stops.txt');
+        $this->fileList[] = new DbUpdaterDto($this->Trips, [], 'trips.txt');
     }
 
     public function execute(Arguments $args, ConsoleIo $io){
@@ -33,78 +41,88 @@ class dbUpdaterCommand extends Command
 
         $this->extractGtfs($io);
 
-        $gtfsFileHandle = @fopen(self::GTFS_FOLDER . 'stops.txt', 'r');
-        if(empty($gtfsFileHandle)){
-            //hibakezeles
-        }
-        $header = true;
-        $headerArray = [];
-        $newTableData = [];
-        while(($gtfsFileContents = fgetcsv($gtfsFileHandle, 0, ',', '"')) !== false){
-            if(empty($gtfsFileContents)){
+        /** @var DbUpdaterDto $actualFile */
+        foreach ($this->fileList as $actualFile){
+            $gtfsFileHandle = @fopen(self::GTFS_FOLDER . $actualFile->fileName, 'r');
+            if(empty($gtfsFileHandle)){
                 continue;
+                //hibakezeles
             }
-            $data = [];
-            if($header){
-                $header = false;
-                $headerArray = $gtfsFileContents;
-                continue;
+            $header = true;
+            $headerArray = [];
+            $newTableData = [];
+            while(($gtfsFileContents = fgetcsv($gtfsFileHandle, 0, ',', '"')) !== false){
+                if(empty($gtfsFileContents)){
+                    continue;
+                }
+                $data = [];
+                if($header){
+                    $header = false;
+                    $headerArray = $gtfsFileContents;
+                    continue;
+                }
+                for($i=0; $i < count($gtfsFileContents); $i++){
+                    $data[$headerArray[$i]] = $this->addTypeToValue($gtfsFileContents[$i]);
+                }
+                $actualFile->tableNewData[] = $data;
+//                $io->out('tableNewData size='.$this->getSize($actualFile->tableNewData));
+                $gtfsFileContents = null;
             }
-            for($i=0; $i < count($gtfsFileContents); $i++){
-                $data[$headerArray[$i]] = $this->addTypeToValue($gtfsFileContents[$i]);
-            }
-            $newTableData[] = $data;
-        }
-        fclose($gtfsFileHandle);
+            fclose($gtfsFileHandle);
 
-        if(empty($newTableData)){
-            $io->error('Nincs frissíthető adat!');
-            $this->abort();
+            if(empty($newTableData)){
+//                $io->error('Nincs frissíthető adat!');
+//                $this->abort();
+            }
         }
+
 //        $table = $this->getTableLocator()->get('Stops');
-        try{
-            $this->Stops->getConnection()->transactional(function ($conn) use ($newTableData, $io){
+//die();
+        /** @var DbUpdaterDto $actualFile */
+        foreach ($this->fileList as $actualFile) {
+            try {
+                $actualFile->TableEntity->getConnection()->transactional(function ($conn) use ($actualFile, $io) {
 //                $io->out('Belépett a tranzakcióba');
-                foreach ($newTableData as $actualData){
-                    $patchedNewData = [];
+                    foreach ($actualFile->tableNewData as $actualData) {
+                        $patchedNewData = [];
 //                    $io->out('[C]Belépett a foreach-be');
-                    try{
-                        $patchedNewData = $this->Stops->newEntity($actualData, ['validate'=>false]);
-                        if($patchedNewData->hasErrors()){
-                            $errorList = '';
-                            foreach ($patchedNewData->getErrors() as $errorKey => $errorMessage){
-                                $errorList .= $errorKey . '=' . implode(' / ', $errorMessage) . '|';
+                        try {
+                            $patchedNewData = $actualFile->TableEntity->newEntity($actualData, ['validate' => false]);
+                            if ($patchedNewData->hasErrors()) {
+                                $errorList = '';
+                                foreach ($patchedNewData->getErrors() as $errorKey => $errorMessage) {
+                                    $errorList .= $errorKey . '=' . implode(' / ', $errorMessage) . '|';
+                                }
+                                $io->error('Hiba az adatok patch-elésekor! Hibák:');
+                                $io->error($errorList);
+                                $this->abort();
                             }
-                            $io->error('Hiba az adatok patch-elésekor! Hibák:');
-                            $io->error($errorList);
+                        } catch (\Exception $e) {
+                            $io->error('Hiba az új entitás létrehozásakor! [' . implode(',', $actualData) . ']');
                             $this->abort();
                         }
-                    } catch (\Exception $e){
-                        $io->error('Hiba az új entitás létrehozásakor! [' . implode(',', $actualData) . ']');
-                        $this->abort();
-                    }
 //                    $io->out('[C]Kész a patch-elés');
 
-                    if(!empty($patchedNewData)){
+                        if (!empty($patchedNewData)) {
 //                        $io->out('Nem üres a patchEntity. Lehet menteni.');
-                        $newEntity = null;
-                        try{
-                            $newEntity = $this->Stops->save($patchedNewData, ['checkRules'=>false, 'atomic'=>false]);
+                            $newEntity = null;
+                            try {
+                                $newEntity = $actualFile->TableEntity->save($patchedNewData, ['checkRules' => false, 'atomic' => false]);
 //                            $newEntity = $this->Stops->save($patchedNewData, ['checkRules'=>false]);
 //                            $io->out('Save után vagyunk.');
-                        } catch (\Exception $e){
-                            $io->error('Nem sikerült az adatokat menteni! Hiba leírása: ' . $e->getMessage());
-                            $this->abort();
+                            } catch (\Exception $e) {
+                                $io->error('Nem sikerült az adatokat menteni! Hiba leírása: ' . $e->getMessage());
+                                $this->abort();
+                            }
                         }
-                    }
 //                    $io->out('[C]Vége a mentésnek');
-                }
-            });
-        } catch (\Exception $e){
-            $io->error('Hiba az adatok mentésekor (fő függvény)!');
-            $this->abort();
+                    }
+                });
+            } catch (\Exception $e) {
+                $io->error('Hiba az adatok mentésekor (fő függvény)!');
+                $this->abort();
+            }
         }
-
         $io->out('Betöltés vége.');
     }
 
@@ -130,7 +148,7 @@ class dbUpdaterCommand extends Command
             $io->error('Hiba a tömörített fájl megnyitásakor: ' . $res);
             $this->abort();
         }
-        $res = $zip->extractTo(self::GTFS_FOLDER, ['stops.txt']);
+        $res = $zip->extractTo(self::GTFS_FOLDER, ['routes.txt', 'stops.txt', 'trips.txt']);
         if ($res === false) {
             $io->error('Hiba a tömörített fájl kitömörítésekor!');
             $this->abort();
@@ -146,5 +164,21 @@ class dbUpdaterCommand extends Command
             return floatval(str_replace(',', '.', $object));
         }
         return $object;
+    }
+
+    function getSize($arr) {
+        $tot = 0;
+        foreach($arr as $a) {
+            if (is_array($a)) {
+                $tot += $this->getSize($a);
+            }
+            if (is_string($a)) {
+                $tot += strlen($a);
+            }
+            if (is_numeric($a)) {
+                $tot += PHP_INT_SIZE;
+            }
+        }
+        return $tot;
     }
 }

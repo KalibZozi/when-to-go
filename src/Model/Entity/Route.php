@@ -17,6 +17,7 @@ use Cake\ORM\Entity;
  */
 class Route extends Entity
 {
+    const NAME = 'Route';
 
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().

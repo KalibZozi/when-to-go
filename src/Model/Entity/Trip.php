@@ -21,6 +21,7 @@ use Cake\ORM\Entity;
  */
 class Trip extends Entity
 {
+    const NAME = 'Trip';
 
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().

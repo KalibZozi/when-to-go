@@ -18,6 +18,7 @@ use Cake\ORM\Entity;
  */
 class Stop extends Entity
 {
+    const NAME = 'Stop';
 
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
