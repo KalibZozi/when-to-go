@@ -10,16 +10,15 @@ use Cake\ORM\Entity;
  * @property string $stop_name
  * @property float $stop_lat
  * @property float $stop_lon
- * @property string $stop_code
- * @property int $location_type
- * @property string $parent_station
- * @property int $wheelchair_boarding
- * @property int $stop_direction
- * @property int $processed
+ * @property string|null $stop_code
+ * @property int|null $location_type
+ * @property string|null $parent_station
+ * @property int|null $wheelchair_boarding
+ * @property int|null $stop_direction
+ * @property int $data_version
  */
 class Stop extends Entity
 {
-    const NAME = 'Stop';
 
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().

@@ -14,11 +14,10 @@ use Cake\ORM\Entity;
  * @property string $route_desc
  * @property string|null $route_color
  * @property string|null $route_text_color
- * @property int $processed
+ * @property int $data_version
  */
 class Route extends Entity
 {
-    const NAME = 'Route';
 
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().

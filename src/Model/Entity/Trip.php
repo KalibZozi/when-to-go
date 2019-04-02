@@ -16,13 +16,12 @@ use Cake\ORM\Entity;
  * @property int|null $wheelchair_accessible
  * @property int|null $bikes_allowed
  * @property int|null $boarding_door
- * @property int $processed
+ * @property int $data_version
  *
  * @property \App\Model\Entity\Route $route
  */
 class Trip extends Entity
 {
-    const NAME = 'Trip';
 
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
