@@ -1,0 +1,39 @@
+Felület tervek
+--------------
+
+bejelentkezés
+    username / email, password, (deviceId)
+
+térkép komponens
+    https://leafletjs.com
+
+deviceId-k kezelése
+    mely megállók, mely járatai, melyik sorban
+
+képernyők
+    bejelentkezés
+        elfelejtett jelszó
+    jelszó csere
+    devices
+        képernyő beállítás
+            új megálló hozzáadása
+                megálló, járat, sor kiválasztás
+        új device hozzáadása
+        meglévő device törlése
+
+táblák
+    users
+        id
+        username / email
+        password
+    devices
+        id
+        user_id
+    displayed_lines
+        id
+        active
+        device_id
+        line
+        stop_id
+        route_id
+

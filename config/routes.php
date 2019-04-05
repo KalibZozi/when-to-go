@@ -46,6 +46,7 @@ use Cake\Routing\Route\DashedRoute;
 Router::defaultRouteClass(DashedRoute::class);
 
 Router::scope('/', function (RouteBuilder $routes) {
+    $routes->setExtensions(['json']);
     // Register scoped middleware for in scopes.
     $routes->registerMiddleware('csrf', new CsrfProtectionMiddleware([
         'httpOnly' => true
@@ -69,6 +70,7 @@ Router::scope('/', function (RouteBuilder $routes) {
      */
     $routes->connect('/pages/*', ['controller' => 'Pages', 'action' => 'display']);
 
+    $routes->connect('/trips/arrivals-and-departures-for-stop', ['controller' => 'Trips', 'action' => 'arrivalsAndDeparturesForStop']);
     /**
      * Connect catchall routes for all controllers.
      *

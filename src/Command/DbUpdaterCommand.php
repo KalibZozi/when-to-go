@@ -16,7 +16,7 @@ use Cake\Console\Command;
 use Cake\Console\ConsoleIo;
 use ZipArchive;
 
-class dbUpdaterCommand extends Command
+class DbUpdaterCommand extends Command
 {
     const GTFS_FOLDER = TMP . "gtfs" . DS;
     const GTFS_FILE = self::GTFS_FOLDER . "gtfs.zip";
