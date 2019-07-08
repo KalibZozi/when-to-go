@@ -37,3 +37,7 @@ táblák
         stop_id
         route_id
 
+
+
+
+
