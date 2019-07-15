@@ -14,12 +14,18 @@
  */
 namespace App;
 
+use Authentication\AuthenticationService;
+use Authentication\AuthenticationServiceProviderInterface;
+use Authentication\Middleware\AuthenticationMiddleware;
 use Cake\Core\Configure;
 use Cake\Core\Exception\MissingPluginException;
 use Cake\Error\Middleware\ErrorHandlerMiddleware;
 use Cake\Http\BaseApplication;
 use Cake\Routing\Middleware\AssetMiddleware;
 use Cake\Routing\Middleware\RoutingMiddleware;
+use Cake\Routing\Router;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Application setup class.
@@ -27,7 +33,7 @@ use Cake\Routing\Middleware\RoutingMiddleware;
  * This defines the bootstrapping logic and middleware layers you
  * want to use in your application.
  */
-class Application extends BaseApplication
+class Application extends BaseApplication implements AuthenticationServiceProviderInterface
 {
     /**
      * {@inheritDoc}
@@ -54,6 +60,8 @@ class Application extends BaseApplication
         if (Configure::read('debug')) {
             $this->addPlugin(\DebugKit\Plugin::class);
         }
+
+        $this->addPlugin('Authentication');
     }
 
     /**
@@ -64,6 +72,12 @@ class Application extends BaseApplication
      */
     public function middleware($middlewareQueue)
     {
+        // Add the authentication middleware
+        $authentication = new AuthenticationMiddleware($this, [
+            'unauthenticatedRedirect' => Router::url(['controller'=>'users', 'action'=>'login'], true),
+            'queryParam' => 'redirect',
+        ]);
+
         $middlewareQueue
             // Catch any exceptions in the lower layers,
             // and make an error page/response
@@ -78,8 +92,66 @@ class Application extends BaseApplication
             // Routes collection cache enabled by default, to disable route caching
             // pass null as cacheConfig, example: `new RoutingMiddleware($this)`
             // you might want to disable this cache in case your routing is extremely simple
-            ->add(new RoutingMiddleware($this, '_cake_routes_'));
+            ->add(new RoutingMiddleware($this, '_cake_routes_'))
+
+            // Add the middleware to the middleware queue
+            ->add($authentication);
+
 
         return $middlewareQueue;
+    }
+
+    /**
+     * Returns a service provider instance.
+     *
+     * @param \Psr\Http\Message\ServerRequestInterface $request Request
+     * @param \Psr\Http\Message\ResponseInterface $response Response
+     * @return \Authentication\AuthenticationServiceInterface
+     */
+    public function getAuthenticationService(ServerRequestInterface $request, ResponseInterface $response)
+    {
+        $service = new AuthenticationService();
+
+        $fields = [
+            'username' => 'username',
+            'password' => 'password'
+        ];
+
+        // Load identifiers
+        $service->loadIdentifier('Authentication.Password', [
+            'resolver' => [
+                'className' => 'Authentication.Orm',
+                'userModel' => 'Users',
+            ],
+            compact('fields'),
+            'passwordHasher' => [
+                'className' => 'Authentication.Fallback',
+//                'resolver' => [
+//                    'className' => 'Authentication.Orm',
+//                    'finder' => 'active'
+//                ],
+                'hashers' => [
+                    'Authentication.Default',
+                    [
+                        'className' => 'Authentication.Legacy',
+                        'hashType' => 'sha512',
+//                        'hashOptions' => [
+//                            'memory_cost' => 512,
+//                            'time_cost' => 12,
+//                            'threads' => 8
+//                        ]
+                    ],
+                ]
+            ]
+        ]);
+
+        // Load the authenticators, you want session first
+        $service->loadAuthenticator('Authentication.Session');
+        $service->loadAuthenticator('Authentication.Form', [
+            'fields' => $fields,
+            'loginUrl' => Router::url(['controller' => 'Users', 'action' => 'login'])
+        ]);
+
+        return $service;
     }
 }
