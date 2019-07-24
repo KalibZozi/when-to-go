@@ -78,6 +78,10 @@ class DisplaysTable extends Table
             ->maxLength('headsign', 200)
             ->allowEmptyString('headsign');
 
+        $validator
+            ->integer('active')
+            ->allowEmptyString('active', false);
+
         return $validator;
     }
 

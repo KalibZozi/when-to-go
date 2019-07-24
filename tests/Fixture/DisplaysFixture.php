@@ -24,6 +24,7 @@ class DisplaysFixture extends TestFixture
         'headsign' => ['type' => 'string', 'length' => 200, 'null' => true, 'default' => null, 'collate' => 'utf8_general_ci', 'comment' => '', 'precision' => null, 'fixed' => null],
         'created' => ['type' => 'datetime', 'length' => null, 'null' => false, 'default' => 'CURRENT_TIMESTAMP', 'comment' => '', 'precision' => null],
         'modified' => ['type' => 'datetime', 'length' => null, 'null' => true, 'default' => null, 'comment' => '', 'precision' => null],
+        'active' => ['type' => 'integer', 'length' => 11, 'unsigned' => false, 'null' => false, 'default' => '0', 'comment' => '', 'precision' => null, 'autoIncrement' => null],
         '_indexes' => [
             'displays_routes_route_id_fk' => ['type' => 'index', 'columns' => ['route_id'], 'length' => []],
             'displays_stops_stop_id_fk' => ['type' => 'index', 'columns' => ['stop_id'], 'length' => []],
@@ -54,8 +55,9 @@ class DisplaysFixture extends TestFixture
                 'route_id' => 'Lorem ipsum dolor sit amet',
                 'direction' => 1,
                 'headsign' => 'Lorem ipsum dolor sit amet',
-                'created' => '2019-07-15 11:08:43',
-                'modified' => '2019-07-15 11:08:43'
+                'created' => '2019-07-15 15:22:24',
+                'modified' => '2019-07-15 15:22:24',
+                'active' => 1
             ],
         ];
         parent::init();

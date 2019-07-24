@@ -51,6 +51,10 @@
             <td><?= $this->Number->format($display->direction) ?></td>
         </tr>
         <tr>
+            <th scope="row"><?= __('Active') ?></th>
+            <td><?= $this->Number->format($display->active) ?></td>
+        </tr>
+        <tr>
             <th scope="row"><?= __('Created') ?></th>
             <td><?= h($display->created) ?></td>
         </tr>

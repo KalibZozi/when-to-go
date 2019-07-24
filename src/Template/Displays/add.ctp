@@ -27,6 +27,7 @@
             echo $this->Form->control('route_id', ['options' => $routes, 'empty' => true]);
             echo $this->Form->control('direction');
             echo $this->Form->control('headsign');
+            echo $this->Form->control('active');
         ?>
     </fieldset>
     <?= $this->Form->button(__('Submit')) ?>

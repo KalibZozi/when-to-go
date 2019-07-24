@@ -30,6 +30,7 @@
                 <th scope="col"><?= $this->Paginator->sort('headsign') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('created') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('modified') ?></th>
+                <th scope="col"><?= $this->Paginator->sort('active') ?></th>
                 <th scope="col" class="actions"><?= __('Actions') ?></th>
             </tr>
         </thead>
@@ -45,6 +46,7 @@
                 <td><?= h($display->headsign) ?></td>
                 <td><?= h($display->created) ?></td>
                 <td><?= h($display->modified) ?></td>
+                <td><?= $this->Number->format($display->active) ?></td>
                 <td class="actions">
                     <?= $this->Html->link(__('View'), ['action' => 'view', $display->id]) ?>
                     <?= $this->Html->link(__('Edit'), ['action' => 'edit', $display->id]) ?>

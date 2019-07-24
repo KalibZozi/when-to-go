@@ -21,7 +21,7 @@
         <?php
             echo $this->Form->control('serial_no');
             echo $this->Form->control('status');
-            echo $this->Form->control('user_id', ['options' => $users, 'empty' => true]);
+//            echo $this->Form->control('user_id', ['options' => $users, 'empty' => true]);
         ?>
     </fieldset>
     <?= $this->Form->button(__('Submit')) ?>

@@ -15,6 +15,7 @@ use Cake\ORM\Entity;
  * @property string|null $headsign
  * @property \Cake\I18n\FrozenTime $created
  * @property \Cake\I18n\FrozenTime|null $modified
+ * @property int $active
  *
  * @property \App\Model\Entity\Device $device
  * @property \App\Model\Entity\Stop $stop
@@ -40,6 +41,7 @@ class Display extends Entity
         'headsign' => true,
         'created' => true,
         'modified' => true,
+        'active' => true,
         'device' => true,
         'stop' => true,
         'route' => true

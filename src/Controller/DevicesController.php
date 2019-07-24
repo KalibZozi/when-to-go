@@ -2,16 +2,29 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\Model\Entity\User;
+use Authentication\Controller\Component\AuthenticationComponent;
 
 /**
  * Devices Controller
  *
  * @property \App\Model\Table\DevicesTable $Devices
+ * @property AuthenticationComponent Authentication
  *
  * @method \App\Model\Entity\Device[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
  */
 class DevicesController extends AppController
 {
+
+    public function initialize()
+    {
+        parent::initialize();
+        $this->loadComponent('Authentication.Authentication', [
+            'logoutRedirect' => '/users/login'
+        ]);
+    }
+
+
     /**
      * Index method
      *
@@ -53,6 +66,11 @@ class DevicesController extends AppController
         $device = $this->Devices->newEntity();
         if ($this->request->is('post')) {
             $device = $this->Devices->patchEntity($device, $this->request->getData());
+            /** @var User $user */
+            $user = $this->Authentication->getIdentity()->getOriginalData();
+            $device->user = $user;
+            $device->user_id = $user->id;
+            $device->setDirty('user_id');
             if ($this->Devices->save($device)) {
                 $this->Flash->success(__('The device has been saved.'));
 

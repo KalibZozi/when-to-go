@@ -1,6 +1,7 @@
 <?php
 namespace App\Model\Entity;
 
+use Authentication\Controller\Component\AuthenticationComponent;
 use Cake\ORM\Entity;
 
 /**
@@ -14,9 +15,14 @@ use Cake\ORM\Entity;
  *
  * @property \App\Model\Entity\User $user
  * @property \App\Model\Entity\Display[] $displays
+ * @property AuthenticationComponent Authentication
  */
 class Device extends Entity
 {
+    const STATUS_DEACTIVATED = 'DEACTIVATED';
+    const STATUS_ACTIVATED = 'ACTIVATED';
+    const STATUS_DISABLED = 'DISABLED';
+
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
      *
@@ -34,4 +40,5 @@ class Device extends Entity
         'user' => true,
         'displays' => true
     ];
+
 }
