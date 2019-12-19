@@ -1,0 +1,126 @@
+<?php
+/**
+ * @var \App\View\AppView $this
+ */
+echo $this->Form->create();
+echo $this->Form->text('username');
+echo $this->Form->password('password');
+echo $this->Form->submit();
+echo $this->Form->end();
+echo $this->Html->link('Logout', $this->Url->build([
+    'controller' => 'Users',
+    'action' => 'logout'
+    ], true)
+);
+
+
+https://futar.bkk.hu/api/query/v1/ws/otp/api/where/arrivals-and-departures-for-stop.json         ?key=apaiary-test&version=3&appVersion=apiary-1.0&includeReferences=true&stopId=BKK_F01004&onlyDepartures=false&limit=60&minutesBefore=2&minutesAfter=30
+http://futar.bkk.hu/bkk-utvonaltervezo-api/ws/otp/api/where/arrivals-and-departures-for-stop.json?key=apaiary-test&version=3&appVersion=apiary-1.0&includeReferences=false&stopId=BKK_F04156&onlyDepartures=false&limit=60&minutesBefore=2&minutesAfter=30
+
+47.579328 19.052762
+47.579697 19.052895
+47.564086	19.082303
+47.563978	19.082316
+47.431405	19.101638
+47.431927	19.102725
+
+https://www.latlong.net/c/?lat=47.579328&long=19.052762
+
+https://nominatim.openstreetmap.org/reverse?lat=47.579328&lon=19.052762&format=json
+https://nominatim.openstreetmap.org/reverse?lat=47.579697&lon=19.052895&format=json
+http://nominatim.org/release-docs/latest/api/Reverse/
+
+routeDetails:
+https://futar.bkk.hu/api/query/v1/ws/otp/api/where/route-details.json?key=apaiary-test&version=3&appVersion=apiary-1.0&includeReferences=false&routeId=BKK_6200&related=false
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+Metadata
+
+https://futar.bkk.hu/api/query/v1/ws/otp/api/where/metadata.json?key=apaiary-test&version=3&appVersion=apiary-1.0&includeReferences=false
+bemenet:
+-nincs
+
+kimenet:
+-aktuális időbélyegzők
+-egy hétre előre dátum -> angol rövig napnevek
+-térkép koordinátái, ami között érkeznek az adatok (pl. buszmegálló helyzete)
+
+-------------
+BicycleRental
+
+https://futar.bkk.hu/api/query/v1/ws/otp/api/where/bicycle-rental.json?key=apaiary-test&version=3&appVersion=apiary-1.0&includeReferences=false
+
+bemenet:
+-nincs
+
+kimenet:
+-mol bubi állomások helye és kapacitása
+
+-----------
+AlertSearch
+
+https://futar.bkk.hu/api/query/v1/ws/otp/api/where/alert-search.json?key=apaiary-test&version=3&appVersion=apiary-1.0&includeReferences=false&query=240&start=&end=
+
+bemenet:
+-query = viszonyszám
+-start / end = időpontok között keres
+
+kimenet:
+-alertIds = string lista [BKK_bkkinfo-70844], a szám adja meg az url végét a pontos leíráshoz: https://m.bkkinfo.hu/zavarok/70844
+-a references-ben az alábbiak találhatóak:
+--alerts / start = mikortól lépett életbe
+--alerts / stopIds = mely megállókat érinti
+--alerts / routeIds = hely járatokat érinti
+--alerts / url / translations / hu = leírást tartalmazó url (lásd alertIds fentebb)
+--alerts / header / translations / hu = rövid leírás
+--alerts / description / translations / hu = hosszú leírás
+
+------
+Search
+
+Keresés megállókra és viszonylatokra???
+https://futar.bkk.hu/api/query/v1/ws/otp/api/where/search.json?key=apaiary-test&version=3&appVersion=apiary-1.0&includeReferences=false&query=240E
+
+bemenet:
+-query = viszonyszám
+
+kimenet:
+???
+
+----------------
+StopsForLocation
+
+A közelben levő megállók. Ez mindent csinál, csak azt nem amit kellene.
+https://futar.bkk.hu/api/query/v1/ws/otp/api/where/stops-for-location.json?key=apaiary-test&version=3&appVersion=apiary-1.0&includeReferences=false&lon=47.477900&lat=19.045807&lonSpan=&latSpan=&radius=100&query=Széll Kálmán
+
+bemenet:
+-lon / lat = koordináták
+-radius = x sugarú kör méterben?
+-query = megálló vagy utca neve?
+
+kimenet:
+-stop adatok (pl. stop_id)
+
+----------------------------
+ArrivalsAndDeparturesForStop
+
+https://futar.bkk.hu/api/query/v1/ws/otp/api/where/arrivals-and-departures-for-stop.json?key=apaiary-test&version=3&appVersion=apiary-1.0&includeReferences=false&stopId=BKK_F04156&onlyDepartures=false&limit=60&minutesBefore=2&minutesAfter=30
+
+bemenet:
+-stopId = megálló azonosító
+-onlyDepartures = kizárólag indulások megjelenítése
+-limit = maximális indulások száma
+-minutesBefore = hány perce elment járatok?
+-minutesAfter = hány perc múlva érkező járatok?
+
+kimenet:
+-data / stopTimes = lista kiírt / tényleges időpontokkal, tripId-val
+-references / routes = busz típus és paraméterei az egész szakaszra
+-references / stops = koordináták, megálló neve (ami ki van írva), irány?, routeIds, 
+-references / trips = routeId, melyik irány kijelző szövege, directionId
+
+tripId -> routeId, direction -> shortName, type
+
+megyik járat -> (default) irány -> megálló
+melyik járat -> megálló -> irány
+
